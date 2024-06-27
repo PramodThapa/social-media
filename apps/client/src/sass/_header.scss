@@ -1,0 +1,44 @@
+@import "variables";
+
+.header {
+  display: flex;
+  margin: 0 auto;
+  max-width: 1400px;
+  align-items: center;
+  justify-content: space-between;
+
+  &__title {
+    color: $white;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  &__profile {
+    display: flex;
+    align-items: center;
+
+    .info {
+      :hover {
+        cursor: pointer;
+      }
+      &__name {
+        font-size: 16px;
+      }
+    }
+
+    .logout {
+      :hover {
+        cursor: pointer;
+      }
+      padding: 5px;
+      margin-left: 5px;
+      font-size: 16px;
+      border-left: 2px solid $white;
+    }
+  }
+}
+
+.wrapper {
+  width: 100%;
+  background-color: $primary;
+}
