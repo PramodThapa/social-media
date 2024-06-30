@@ -1,17 +1,65 @@
-import { Avatar, IconButton } from "@mui/material";
+import { Avatar, Button, IconButton } from "@mui/material";
 import { Logout } from "@mui/icons-material";
 
 import { getAcronym } from "~/utils";
-import "~/sass/_header.scss";
+import "~/styles/_header.scss";
+import { clearUserFromLocalStorage } from "~/services";
+import { Link, useNavigate } from "react-router-dom";
+import { ROUTE } from "~/constant/route";
+import useIsLoggedIn from "~/hooks/useIsLoggedIn";
+import { BLOG, FRIENDS } from "~/constant";
 
-interface HeaderProps {}
+export const Header = () => {
+  const navigator = useNavigate();
 
-export const Header: React.FC<HeaderProps> = () => {
-  const isLoggedIn = true;
+  const { isLoggedIn, user } = useIsLoggedIn();
+
+  const handleLogout = () => {
+    clearUserFromLocalStorage();
+    navigator(ROUTE.AUTH);
+  };
+
+  const handleLogoClick = () => {
+    navigator(ROUTE.HOME);
+  };
+
   return (
     <div className="wrapper">
-      <div className="header">
-        <div className="header__title">The Daily Insight </div>
+      <div className={`header ${isLoggedIn ? "header--is-logged" : ""}`}>
+        <div className="header__title">
+          <p onClick={handleLogoClick} className="logo">
+            The Daily Insight
+          </p>
+
+          {isLoggedIn && (
+            <div className="title-group">
+              <Button
+                style={{
+                  font: "inherit",
+                  fontSize: "16px",
+                  textTransform: "none",
+                }}
+                color="inherit"
+                component={Link}
+                to={ROUTE.CREATE_BLOG}
+              >
+                {BLOG.CREATE_BLOG}
+              </Button>
+              <Button
+                style={{
+                  font: "inherit",
+                  fontSize: "16px",
+                  textTransform: "none",
+                }}
+                color="inherit"
+                component={Link}
+                to={ROUTE.VIEW_FOLLOWER}
+              >
+                {FRIENDS.FRIEND_NAV}
+              </Button>
+            </div>
+          )}
+        </div>
 
         {isLoggedIn && (
           <div className="header__profile">
@@ -19,10 +67,10 @@ export const Header: React.FC<HeaderProps> = () => {
               <IconButton>
                 <Avatar>{getAcronym("")}</Avatar>
               </IconButton>
-              <div className="info__name">{`Pramod`}</div>
+              <div className="info__name">{user?.username}</div>
             </div>
 
-            <div className="header__profile logout" onClick={() => {}}>
+            <div className="header__profile logout" onClick={handleLogout}>
               <span>Logout</span>
               <Logout fontSize="small" style={{ marginLeft: "2" }} />
             </div>

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 
 import { TextField, Button, Box } from "@mui/material";
 import LoginIcon from "@mui/icons-material/Login";
@@ -8,16 +8,20 @@ import LoginIcon from "@mui/icons-material/Login";
 import { signUpValidationSchema } from "../../schema";
 
 export interface SignUpFormValue {
+  email: string;
   username: string;
   password: string;
   confirmPassword: string;
 }
 
 interface SignUpFormProps {
-  handleSignUp: () => void;
+  onSignUp: (
+    value: SignUpFormValue,
+    formikBag: FormikHelpers<SignUpFormValue>
+  ) => void;
 }
 
-export const SignUpForm: React.FC<SignUpFormProps> = ({ handleSignUp }) => {
+export const SignUpForm: React.FC<SignUpFormProps> = ({ onSignUp }) => {
   const {
     values,
     errors,
@@ -28,18 +32,32 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ handleSignUp }) => {
     handleSubmit,
   } = useFormik({
     initialValues: {
+      email: "",
       username: "",
       password: "",
       confirmPassword: "",
     },
     validationSchema: signUpValidationSchema,
-    onSubmit: async (value: SignUpFormValue, { setSubmitting, resetForm }) =>
-      await handleSignUp(value, setSubmitting, resetForm),
+    onSubmit: onSignUp,
   });
 
   return (
     <form onSubmit={handleSubmit}>
       <Box>
+        <TextField
+          fullWidth
+          id="email"
+          name="email"
+          label="Email*"
+          variant="outlined"
+          onBlur={handleBlur}
+          onChange={handleChange}
+          value={values?.email}
+          error={touched.email && !!errors.email}
+          helperText={touched.email && errors.email}
+        />
+      </Box>
+      <Box paddingTop={"10px"}>
         <TextField
           fullWidth
           id="username"

@@ -1,81 +1,88 @@
-import { useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import "~/sass/_auth.scss";
+import "~/styles/_auth.scss";
 import { AuthMode } from "~/types";
-import { LoginForm, SignUpForm } from "~/component/authentication";
+import {
+  LoginForm,
+  LoginInFormValue,
+  SignUpForm,
+  SignUpFormValue,
+} from "~/component/authentication";
+import { useUserLogin, useUserSignup } from "~/hooks/user/userUser";
+import { handleError } from "~/utils";
+
+import { ROUTE } from "~/constant/route";
+import { addUserToLocalStorage } from "~/services";
+import { AxiosError } from "axios";
+import { AUTH } from "~/constant";
 
 export function Auth() {
-  // const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
   const mode: AuthMode = (params.get("mode") as AuthMode) || AuthMode.SIGNUP;
+  const { mutateAsync: handleUserSignup, error: signupError } = useUserSignup();
+  const { mutateAsync: handleUserLogin, error: loginError } = useUserLogin();
 
   /**
    * Function to handle login form submit.
    *
    * @param {LoginInitialValue} value Form values.
-   * @param {Function} setSubmitting Function to handle set submitting.
    */
-  // const handleUserLogin = async (
-  //   value: LoginInFormValue,
-  //   setSubmitting: () => void
-  // ) => {
-  //   try {
-  //     setSubmitting(true);
+  const onUserLogin = async (value: LoginInFormValue) => {
+    try {
+      const { data: response } = await handleUserLogin(value);
 
-  //     const { data: response } = await userLogin(value);
+      const { token, user } = response.data;
 
-  //     const { token, user } = response?.data;
-
-  //     addUserLoginToLocalStorage(token, user);
-  //     dispatch(setUser(user));
-
-  //     navigate("/");
-  //   } catch (error: Error | AxiosError | any) {
-  //     handleError(error);
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
+      addUserToLocalStorage(token, user);
+      navigate(ROUTE.HOME);
+    } catch (error) {
+      handleError(loginError as AxiosError);
+    }
+  };
 
   /**
    * Function to handle sign up form submit.
    *
    * @param {SignUpInitialValues} value Sign up form values.
-   * @param {Function} setSubmitting Function to handle set submitting.
    */
-  // const handleUserSignUp = async (
-  //   value: SignUpFormValue,
-  //   setSubmitting: Function
-  // ) => {
-  //   const { username, password } = value;
-  //   try {
-  //     setSubmitting(true);
+  const onUserSignUp = async (value: SignUpFormValue) => {
+    try {
+      const { data: response } = await handleUserSignup(value);
+      const { token, user } = response.data;
 
-  //     const { data: response } = await userSignUp({ username, password });
+      addUserToLocalStorage(token, user);
 
-  //     const { token, user } = response?.data;
-
-  //     addUserLoginToLocalStorage(token, user);
-  //     navigate("/");
-  //   } catch (error: Error | AxiosError | any) {
-  //     handleError(error[0]);
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
+      navigate(ROUTE.HOME);
+    } catch (err) {
+      handleError(signupError as AxiosError);
+    }
+  };
 
   return (
     <div className="login">
       <div className="login__form">
         {mode === AuthMode.LOGIN ? (
-          <LoginForm
-            onFormSubmit={() => {}}
-            initialValue={{ username: "", password: "" }}
-          />
+          <>
+            <LoginForm
+              onFormSubmit={onUserLogin}
+              initialValue={{ email: "", password: "" }}
+            />
+            <div className="form-alternative">
+              {AUTH.WITHOUT_ACCOUNT}
+              <Link to={`${ROUTE.AUTH}/?mode=signup`}>Signup</Link>
+            </div>
+          </>
         ) : (
-          <SignUpForm handleSignUp={() => {}} />
+          <>
+            <SignUpForm onSignUp={onUserSignUp} />
+            <div className="alternative">
+              {AUTH.WITH_ACCOUNT}
+              <Link to={`${ROUTE.AUTH}/?mode=login`}>Login</Link>
+            </div>
+          </>
         )}
       </div>
     </div>

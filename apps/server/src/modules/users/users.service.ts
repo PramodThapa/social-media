@@ -1,45 +1,76 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-
-import { Model } from 'mongoose';
-
-import { Users } from './schemas/users.schema';
-import { SignupDto } from '../../dto';
+import { UserRepository } from './user.repository';
+import { CreateUserDto } from '@/dto/user/createUser.dto';
+import User from './entity/user.entity';
+import { FollowDto } from '@/dto/user/addFollow.dto';
+import {
+  FollowAction,
+  FollowStatus,
+  UserRelation,
+} from '@/interfaces/users/relation';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(Users.name)
-    private usersModel: Model<Users>,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
-  /**
-   * Get all the user.
-   *
-   * @returns {User[]}
-   */
-  async create(createUser: SignupDto): Promise<Users> {
-    return await this.usersModel.create(createUser);
+  async create(user: CreateUserDto): Promise<User> {
+    return await this.userRepository.createUser(user);
   }
 
-  /**
-   * Find the use by name.
-   *
-   * @param username - Username.
-   * @returns {Users | undefined}
-   */
-  async findOne(username: string): Promise<Users | undefined> {
-    return await this.usersModel.findOne({ username });
+  async validateUniqueEmail(email: string): Promise<boolean> {
+    const user = await this.userRepository.findByProperty('email', email);
+
+    if (user) return false;
+
+    return true;
   }
 
-  /**
-   * Function to get user by id.
-   *
-   * @param id -User Id.
-   *
-   * @returns { Promise<Users | undefined> }
-   */
-  async findById(id: string): Promise<Users | undefined> {
-    return await this.usersModel.findById(id);
+  async findUserById(id: string): Promise<User> {
+    return await this.userRepository.findById(id);
+  }
+
+  async findUserByEmail(email: string): Promise<User> {
+    return await this.userRepository.findByProperty('email', email);
+  }
+
+  async handleFollowAction(follow: FollowDto): Promise<any> {
+    const { followerId, followeeId, action } = follow;
+    switch (action) {
+      case FollowAction.UPDATE:
+        this.userRepository.updateRelation(
+          followerId,
+          followeeId,
+          UserRelation.FOLLOW,
+          { status: FollowStatus.ACCEPTED },
+        );
+        break;
+      case FollowAction.DROP:
+        this.userRepository.dropRelation(
+          followerId,
+          followeeId,
+          UserRelation.FOLLOW,
+        );
+        break;
+      default:
+        await this.userRepository.addRelation(
+          followerId,
+          followeeId,
+          UserRelation.FOLLOW,
+          { status: FollowStatus.PENDING },
+        );
+    }
+    return;
+  }
+
+  async getFollowRequests(id: string, status: FollowStatus): Promise<User[]> {
+    return this.userRepository.findAllFollowRequests(id, status);
+  }
+
+  async getAllFollowings(id: string): Promise<User[]> {
+    return this.userRepository.findAllFollowings(id);
+  }
+
+  async getAllUnFollowedUsers(id: string): Promise<User[]> {
+    return await this.userRepository.findUnfollowedUsers(id);
   }
 }

@@ -20,6 +20,16 @@ export class GremlinService implements OnModuleDestroy {
     this.translator = new process.Translator(this.client);
   }
 
+  async assignProperties(
+    traversal: process.GraphTraversal,
+    properties: object,
+  ) {
+    Object.entries(properties).forEach(([key, value]) => {
+      traversal.property(key, value);
+    });
+    return traversal;
+  }
+
   /**
    * Get the Gremlin client instance.
    *

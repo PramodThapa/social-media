@@ -40,7 +40,8 @@ export class BaseRepository {
     const isValueMapPresent = steps.some((step) => step.includes('valueMap'));
 
     if (isSelectPresent) {
-      traversal.by(statics.valueMap(true).by(statics.unfold())).dedup();
+      traversal.valueMap(true).by(statics.unfold()).dedup();
+      // traversal.by(statics.valueMap(true).by(statics.unfold())).dedup();
     } else if (isValueMapPresent) {
       traversal.by(statics.unfold()).dedup();
     } else {

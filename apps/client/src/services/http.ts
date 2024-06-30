@@ -5,9 +5,9 @@ import { CONTENT_TYPE_JSON } from "~/constant";
 import { refreshAccessToken } from "./auth";
 import {
   getUserFromLocalStorage,
-  addUserLoginToLocalStorage,
   getRefreshTokenFromLocalStorage,
   getAccessTokenFromLocalStorage,
+  addUserToLocalStorage,
 } from "./localStorage";
 
 /**
@@ -58,6 +58,7 @@ http.interceptors.response.use(
 
     if (error.response.status === 401 && !originalRequest?._retry) {
       originalRequest._retry = true;
+
       const { id } = getUserFromLocalStorage();
       const refreshToken = getRefreshTokenFromLocalStorage() || "";
 
@@ -69,7 +70,7 @@ http.interceptors.response.use(
 
         // eslint-disable-next-line no-unsafe-optional-chaining
         const { data } = response?.data;
-        addUserLoginToLocalStorage(data?.tokehown, data?.user);
+        addUserToLocalStorage(data?.token, data?.user);
 
         return http(originalRequest);
       } catch (error) {

@@ -1,6 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+// import { IsNotEmpty } from 'class-validator';
 
 export class TokenDto {
-  @IsNotEmpty({ message: 'User ID is required.' })
-  readonly id: string;
+  // @IsNotEmpty({ message: 'User ID is required.' })
+  // readonly id: string;
 }

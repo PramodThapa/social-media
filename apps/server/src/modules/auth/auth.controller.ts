@@ -1,15 +1,15 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { LoginDto } from '@/dto/login.dto';
-import { SignupDto } from '@/dto/signup.dto';
-import { Response, UserResponse } from 'src/types/response';
-import { AuthGuard } from '@nestjs/passport';
-import { RefreshTokenDto } from '@/dto';
+import { JwtAuthGuard, LocalAuthGuard } from '@/guards';
+import { CreateUserDto } from '@/dto/user/createUser.dto';
+import { LoginDto } from '@/dto';
+import { Request } from 'express';
+import User from '../users/entity/user.entity';
 
 @Controller('/v1/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   /**
    * Endpoint to create user.
@@ -17,7 +17,7 @@ export class AuthController {
    * @returns {Users}
    */
   @Post('/signup')
-  async create(@Body() user: SignupDto): Promise<Response<UserResponse>> {
+  async create(@Body() user: CreateUserDto): Promise<any> {
     return this.authService.createUser(user);
   }
 
@@ -26,21 +26,17 @@ export class AuthController {
    *
    * @returns {Users}
    */
+  @UseGuards(LocalAuthGuard)
   @Post('/login')
-  async validate(@Body() user: LoginDto): Promise<Response<UserResponse>> {
+  async validate(@Body() user: LoginDto): Promise<any> {
     return this.authService.validateUser(user);
   }
 
-  /**
-   * Endpoint to for validating refresh token.
-   *
-   * @returns {Users}
-   */
-  @Post('/access-token')
-  @UseGuards(AuthGuard('refresh-jwt'))
-  async validateRefreshToken(
-    @Body() user: RefreshTokenDto,
-  ): Promise<Response<UserResponse>> {
-    return this.authService.assignNewToken(user);
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  async validateRefreshToken(@Req() req: Request): Promise<any> {
+    const user = req?.user as User;
+
+    return this.authService.getUser(user?.id);
   }
 }

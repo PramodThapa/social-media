@@ -4,17 +4,16 @@ import { useFormik } from "formik";
 
 import { TextField, Box, Button } from "@mui/material";
 import LoginIcon from "@mui/icons-material/Login";
-
-import { loginValidationSchema } from "../../schema";
+import { loginValidationSchema } from "~/schema";
 
 export interface LoginInFormValue {
-  username: string;
+  email: string;
   password: string;
 }
 
 interface LoginFormProps {
-  onFormSubmit: () => void;
   initialValue: LoginInFormValue;
+  onFormSubmit: (value: LoginInFormValue) => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({
@@ -32,8 +31,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   } = useFormik({
     initialValues: initialValue,
     validationSchema: loginValidationSchema,
-    onSubmit: async (value: LoginInFormValue, { setSubmitting }) =>
-      await onFormSubmit(value, setSubmitting),
+    onSubmit: onFormSubmit,
   });
 
   return (
@@ -41,15 +39,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       <Box>
         <TextField
           fullWidth
-          id="username"
-          name="username"
-          label="Username*"
+          id="email"
+          name="email"
+          label="Email*"
           variant="outlined"
           onBlur={handleBlur}
           onChange={handleChange}
-          value={values?.username}
-          error={touched.username && !!errors.username}
-          helperText={touched.username && errors.username}
+          value={values?.email}
+          error={touched.email && !!errors.email}
+          helperText={touched.email && errors.email}
         />
       </Box>
       <Box paddingY={"10px"}>

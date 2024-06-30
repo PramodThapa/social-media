@@ -3,15 +3,12 @@ import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
 
-import { LoginDto } from '@/dto/login.dto';
-import { SignupDto } from '@/dto/signup.dto';
-
 import { UsersService } from '../users/users.service';
-import { Users } from 'src/users/schemas/users.schema';
+import { CreateUserDto } from '@/dto/user/createUser.dto';
+import { LoginDto } from '@/dto';
 import { ConfigService } from '@nestjs/config';
-import { Token } from 'src/types';
-import { Response, UserResponse } from 'src/types/response';
-import { RefreshTokenDto } from '@/dto';
+import User from '../users/entity/user.entity';
+import { Token } from '@/interfaces/token';
 
 @Injectable()
 export class AuthService {
@@ -26,10 +23,10 @@ export class AuthService {
    *
    * @param loginDto - Login DTO.
    */
-  async validateUser(loginDto: LoginDto): Promise<Response<UserResponse>> {
-    const { username, password } = loginDto;
+  async validateUser(loginDto: LoginDto): Promise<any> {
+    const { email, password } = loginDto;
 
-    const user = await this.usersService.findOne(username);
+    const user = await this.usersService.findUserByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid username or password.');
@@ -39,10 +36,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password.');
     }
 
-    const token: Token = await this.getTokens(user);
+    const token = await this.signTokens(user);
 
     return {
-      data: { token, user: { id: user._id, username: user.username } },
+      data: {
+        token: token,
+        user: { id: user.id, email: user.email },
+      },
       status: HttpStatus.OK,
     };
   }
@@ -52,19 +52,39 @@ export class AuthService {
    *
    * @param signupDto - Signup Dto.
    */
-  async createUser(signupDto: SignupDto): Promise<Response<UserResponse>> {
-    const { username, password: userInputPassword } = signupDto;
+  async createUser(userDto: CreateUserDto): Promise<any> {
+    const { email, password, username } = userDto;
 
     const user = await this.usersService.create({
+      email,
+      password: await this.hashedPassword(password),
       username,
-      password: await this.hashedPassword(userInputPassword),
     });
 
-    const token: Token = await this.getTokens(user);
+    const token = await this.signTokens(user);
 
     return {
-      data: { token, user: { id: user._id, username: user.username } },
+      data: {
+        token: token,
+        user: { id: user.id, userName: user.username, email: user.email },
+      },
       status: HttpStatus.CREATED,
+    };
+  }
+
+  async getUser(id: number | undefined): Promise<any> {
+    if (!id) {
+      throw new UnauthorizedException("User doesn't exist");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...rest } = await this.usersService.findUserById(
+      id.toString(),
+    );
+
+    return {
+      data: { user: { ...rest } },
+      status: HttpStatus.OK,
     };
   }
 
@@ -72,23 +92,21 @@ export class AuthService {
    * Function to assign new user token to user.
    *
    * @param refreshTokenDto
-   * @returns {Promise<Response<UserResponse>>}
+   * @returns {Promise<>}
    */
-  async assignNewToken(
-    refreshTokenDto: RefreshTokenDto,
-  ): Promise<Response<UserResponse>> {
+  async validateToken(refreshTokenDto: any): Promise<any> {
     const { id } = refreshTokenDto;
 
-    const user = await this.usersService.findById(id);
+    const user = await this.usersService.findUserById(id);
 
     if (!user) {
       throw new UnauthorizedException("User doesn't exist");
     }
 
-    const token: Token = await this.getTokens(user);
+    const token = await this.signTokens(user);
 
     return {
-      data: { token, user: { id: user._id, username: user.username } },
+      data: { token, user: { id: user.id, username: user.username } },
       status: HttpStatus.OK,
     };
   }
@@ -124,18 +142,20 @@ export class AuthService {
    * @param {Users} user
    * @returns {Promise<Token>}
    */
-  async getTokens(user: Users): Promise<Token> {
-    const payload = { sub: user._id, username: user.username };
+  private async signTokens(user: User): Promise<Token> {
+    const payload = { sub: user.id, email: user.email };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('ACCESS_JWT_SECRET'),
-        expiresIn: this.configService.get<string | number>('ACCESS_EXPIRES_IN'),
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<string | number>(
+          'ACCESS_TOKEN_EXPIRE_IN',
+        ),
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('REFRESH_JWT_SECRET'),
+        secret: this.configService.get<string>('JWT_SECRET'),
         expiresIn: this.configService.get<string | number>(
-          'REFRESH_EXPIRES_IN',
+          'REFRESH_TOKEN_EXPIRE_IN',
         ),
       }),
     ]);

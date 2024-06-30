@@ -1,21 +1,12 @@
 import { LocalStorageKeys } from "~/types";
-
-export interface User {
-  id: string;
-  username: string;
-}
-
-interface Token {
-  accessToken: string;
-  refreshToken: string;
-}
+import { Token, User } from "~/types/interface";
 
 /**
  *
  * @param {Token} token JWT token.
  * @param {User} user User details.
  */
-export const addUserLoginToLocalStorage = (token: Token, user: User) => {
+export const addUserToLocalStorage = (token: Token, user: User) => {
   localStorage.setItem(LocalStorageKeys.ACCESS_TOKEN, token.accessToken);
   localStorage.setItem(LocalStorageKeys.REFRESH_TOKEN, token.refreshToken);
   localStorage.setItem(LocalStorageKeys.USER, JSON.stringify(user));
@@ -45,13 +36,13 @@ export const getUserFromLocalStorage = () => {
     return JSON.parse(user);
   }
 
-  return {};
+  return null;
 };
 
 /**
  * Clears the user info from local storage.
  */
-export const clearUserInfoFromLocalStorage = () => {
+export const clearUserFromLocalStorage = () => {
   localStorage.removeItem(LocalStorageKeys.ACCESS_TOKEN);
   localStorage.removeItem(LocalStorageKeys.REFRESH_TOKEN);
   localStorage.removeItem(LocalStorageKeys.USER);

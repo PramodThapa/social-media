@@ -1,7 +1,7 @@
 import { ROUTE } from "~/constant/route";
-import { clearUserInfoFromLocalStorage } from "~/services/localStorage";
+import { clearUserFromLocalStorage } from "~/services/localStorage";
 
 export const logOut = () => {
-  clearUserInfoFromLocalStorage();
+  clearUserFromLocalStorage();
   window.location.href = ROUTE.AUTH;
 };

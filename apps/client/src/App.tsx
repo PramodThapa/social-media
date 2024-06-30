@@ -1,16 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { ROUTE } from "./constant/route";
-// import { getUserFromLocalStorage } from "./services/localStorage";
-import { PrivateRoute } from "~/hoc";
-import { Auth, Error404, Home } from "~/pages";
-import "~/sass/_app.scss";
-import { Header } from "./component/common/Header";
+import "~/styles/_app.scss";
+import router from "./routes";
 
 const queryClient = new QueryClient();
 
@@ -18,21 +15,10 @@ function App() {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Header />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Home />
-                </PrivateRoute>
-              }
-            />
-            <Route path={ROUTE.AUTH} element={<Auth />} />
-            <Route path="*" element={<Error404 />} />
-          </Routes>
-        </BrowserRouter>
+        <RouterProvider router={router} />
+        {import.meta.env.MODE === "development" && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )}
       </QueryClientProvider>
 
       <ToastContainer
