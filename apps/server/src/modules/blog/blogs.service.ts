@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 
 import { BlogsRepository } from './blogs.repository';
 import { CreateBlogDto } from '@/dto/blog/createBlog.dto';
-import { UsersService } from '../users/users.service';
+import { UserRepository } from '../users/user.repository';
 
 @Injectable()
 export class BlogsService {
   constructor(
     private readonly blogsRepository: BlogsRepository,
-    private readonly userService: UsersService,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async create(blog: CreateBlogDto) {
@@ -22,7 +22,7 @@ export class BlogsService {
   async getBlog(id: string) {
     const blog = await this.blogsRepository.findOne(id);
 
-    const user = await this.userService.findUserById(blog.authorId.toString());
+    const user = await this.userRepository.findById(blog.authorId.toString());
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = user;
 

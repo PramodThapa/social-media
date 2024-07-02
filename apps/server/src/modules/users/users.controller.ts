@@ -1,9 +1,18 @@
 import { JwtAuthGuard } from '@/guards';
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { FollowDto } from '@/dto/user/addFollow.dto';
-import { FollowStatus } from '@/interfaces/users/relation';
 import User from './entity/user.entity';
+import { FollowStatus } from '@/interfaces/enum';
+import { Blog } from '../blog/entity/blogs.entity';
 
 @Controller('/v1/users')
 export class UserController {
@@ -14,35 +23,30 @@ export class UserController {
    *
    * @returns {Users}
    */
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('/follow')
   async followUser(@Body() follow: FollowDto): Promise<User> {
     return this.userService.handleFollowAction(follow);
   }
 
-  @Get('/:id/follow/pending')
-  async getPendingFollowRequest(@Param('id') id: string): Promise<User[]> {
-    return this.userService.getFollowRequests(id, FollowStatus.PENDING);
-  }
-
-  @Get('/:id/follow/accepted')
-  async getAcceptedFollowRequest(@Param('id') id: string): Promise<User[]> {
-    return this.userService.getFollowRequests(id, FollowStatus.ACCEPTED);
-  }
-
-  @Get('/:id/following')
-  async getUserFollowings(@Param('id') id: string): Promise<User[]> {
-    return this.userService.getAllFollowings(id);
-  }
-
-  @Get('/:id/all')
-  async getUnFollowedUsers(@Param('id') id: string): Promise<User[]> {
-    return this.userService.getAllUnFollowedUsers(id);
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id/follow')
+  async getFriends(
+    @Param('id') id: string,
+    @Query('status') status: FollowStatus,
+  ) {
+    return this.userService.getFriends(id, status);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/profile/:id')
+  @Get('/:id')
   async getProfile(@Param('id') id: string): Promise<User> {
     return this.userService.findUserById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id/blogs')
+  async getUserBlogs(@Param('id') id: string): Promise<Blog[]> {
+    return this.userService.getBlogsByUserId(id);
   }
 }

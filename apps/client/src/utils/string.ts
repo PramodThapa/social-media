@@ -34,21 +34,27 @@ export const getAcronym = (label: string): string => {
  * @param {object} params
  * @returns {string}.
  */
+
 export const interpolate = (str: string, params: object = {}): string => {
   if (!params) {
     return str;
   }
 
-  let formattedString = str;
+  let formattedString = str.split("?")[0];
+  let queryParams = "";
 
   for (const [key, value] of Object.entries(params)) {
     const val = value || "";
 
-    formattedString = formattedString.replace(
-      new RegExp(`:${key}`, "gi"),
-      val.toString()
-    );
+    if (str.includes(`:${key}`)) {
+      formattedString = formattedString.replace(
+        new RegExp(`:${key}`, "gi"),
+        val.toString()
+      );
+    } else {
+      queryParams += `${queryParams ? "&" : "?"}${key}=${encodeURIComponent(val.toString())}`;
+    }
   }
 
-  return formattedString;
+  return formattedString + queryParams;
 };

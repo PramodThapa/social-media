@@ -7,7 +7,14 @@ const v1Endpoints = {
   FILE_UPLOAD: "/files/upload",
 
   GET_BLOGS: "/blogs",
+  GET_BLOG: "/blogs/:id",
   CREATE_BLOG: "/blogs/create",
+
+  USER: "/users/:id",
+  USER_BLOGS: "/users/:id/blogs",
+  USER_FRIENDS: "/users/:id/follow",
+
+  FOLLOW_USERS: "/users/follow",
 };
 
 type EndPoint = Record<keyof typeof v1Endpoints, string>;

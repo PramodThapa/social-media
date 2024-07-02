@@ -1,0 +1,24 @@
+.profile {
+  &__header {
+    display: flex;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    align-items: center;
+    justify-content: space-between;
+
+    &-info {
+      display: flex;
+      align-items: center;
+
+      &-details {
+        margin-left: 24px;
+
+        h4 {
+          font-weight: 600;
+          font-size: 32px;
+          color: getColor("neutral.80");
+        }
+      }
+    }
+  }
+}

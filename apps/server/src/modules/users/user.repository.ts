@@ -3,12 +3,13 @@ import { BaseRepository } from '../gremlin/base.repository';
 import { GremlinService } from '../gremlin/gremlin.service';
 import { CreateUserDto } from '@/dto/user/createUser.dto';
 import User from './entity/user.entity';
-import { FollowStatus, UserRelation } from '@/interfaces/users/relation';
 
 import { process } from 'gremlin';
+import { FollowStatus, UserRelation } from '@/interfaces/enum';
 
 const { both } = process.statics;
 const { P } = process;
+const __ = process.statics;
 
 @Injectable()
 export class UserRepository extends BaseRepository {
@@ -32,8 +33,14 @@ export class UserRepository extends BaseRepository {
     properties: object,
   ): Promise<any> {
     const g = this.gremlinService.getClient();
-
-    const traversal = g.V(from).as('a').V(to).as('b').addE(type).from_('a');
+    const traversal = g
+      .V(from)
+      .as('a')
+      .V(to)
+      .as('b')
+      .addE(type)
+      .from_('a')
+      .to('b');
 
     this.gremlinService.assignProperties(traversal, properties);
     await this.execute(traversal);
@@ -49,7 +56,7 @@ export class UserRepository extends BaseRepository {
     const traversal = g
       .V(from)
       .outE(type)
-      .has('status', 'PENDING')
+      .has('status', FollowStatus.PENDING)
       .as('e')
       .inV()
       .hasId(to)
@@ -62,8 +69,9 @@ export class UserRepository extends BaseRepository {
     return relation;
   }
 
-  async dropRelation(from: string, to: string, relation: UserRelation) {
+  async cancelRelation(from: string, to: string, relation: UserRelation) {
     const g = this.gremlinService.getClient();
+
     const traversal = g
       .V(from)
       .outE(relation)
@@ -92,13 +100,16 @@ export class UserRepository extends BaseRepository {
     return this.execute(traversal);
   }
 
-  async findAllFollowings(userId: string): Promise<User[]> {
+  async findAllFollowings(
+    userId: string,
+    status: FollowStatus,
+  ): Promise<User[]> {
     const g = this.gremlinService.getClient();
 
     const traversal = g
       .V(userId)
       .outE(UserRelation.FOLLOW)
-      .has('status', FollowStatus.ACCEPTED)
+      .has('status', status)
       .inV()
       .valueMap(true);
 
@@ -137,6 +148,37 @@ export class UserRepository extends BaseRepository {
       .not(both(UserRelation.FOLLOW).where(P.eq('user1')))
       .valueMap(true);
 
-    return this.execute(traversal);
+    const user = await this.execute<User>(traversal);
+
+    return user;
+  }
+
+  async rejectRelation(from: string, to: string, relation: UserRelation) {
+    const g = this.gremlinService.getClient();
+
+    const traversal = g
+      .V(to)
+      .outE(relation)
+      .as('e')
+      .inV()
+      .hasId(from)
+      .select('e')
+      .drop();
+
+    await this.execute(traversal);
+  }
+
+  async findAllSuggestions(userId: string) {
+    const g = this.gremlinService.getClient();
+    const traversal = g
+      .V(userId)
+      .out(UserRelation.FOLLOW)
+      .out(UserRelation.FOLLOW)
+      .dedup()
+      .where(__.not(__.in_(UserRelation.FOLLOW).hasId(userId)));
+
+    const user = await this.execute<User>(traversal);
+
+    return user;
   }
 }

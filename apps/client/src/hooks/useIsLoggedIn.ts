@@ -8,6 +8,8 @@ const useIsLoggedIn = () => {
 
   const { data: user } = useVerifyAuth();
 
+  const isLoggedInUser = user?.id === 
+
   useEffect(() => {
     if (localUser && user) {
       setIsLoggedIn(true);

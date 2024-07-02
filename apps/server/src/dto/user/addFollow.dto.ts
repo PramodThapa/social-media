@@ -1,4 +1,4 @@
-import { FollowAction } from '@/interfaces/users/relation';
+import { FollowAction } from '@/interfaces/enum';
 import { IsNotEmpty } from 'class-validator';
 
 export class FollowDto {

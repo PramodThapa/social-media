@@ -1,3 +1,5 @@
+import { FollowAction } from "./enums";
+
 export interface UserResponse {
   data: {
     user: User;
@@ -15,6 +17,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  avatarUrl?: string;
 }
 
 export interface FileUploadResponse {
@@ -34,4 +37,20 @@ export interface Blog {
 }
 
 export interface CreateBlogPayload
-  extends Omit<Blog, "id" | "createAt" | "label"> {}
+  extends Omit<Blog, "id" | "createdAt" | "label"> {}
+
+export interface BlogDetail {
+  blog: Blog;
+  user: User;
+}
+
+export interface ButtonAction {
+  name: string;
+  handleClick: (from?: string, to?: string) => void;
+}
+
+export interface UserFollowPayload {
+  followerId: string;
+  followeeId: string;
+  action: FollowAction;
+}

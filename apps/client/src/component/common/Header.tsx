@@ -1,13 +1,13 @@
 import { Avatar, Button, IconButton } from "@mui/material";
 import { Logout } from "@mui/icons-material";
 
-import { getAcronym } from "~/utils";
+import { getAcronym, interpolate } from "~/utils";
 import "~/styles/_header.scss";
 import { clearUserFromLocalStorage } from "~/services";
 import { Link, useNavigate } from "react-router-dom";
 import { ROUTE } from "~/constant/route";
 import useIsLoggedIn from "~/hooks/useIsLoggedIn";
-import { BLOG, FRIENDS } from "~/constant";
+import { BLOG, FALLBACK_ID, FRIENDS } from "~/constant";
 
 export const Header = () => {
   const navigator = useNavigate();
@@ -21,6 +21,10 @@ export const Header = () => {
 
   const handleLogoClick = () => {
     navigator(ROUTE.HOME);
+  };
+
+  const handleProfileClick = () => {
+    navigator(interpolate(ROUTE.VIEW_PROFILE, { id: user?.id || FALLBACK_ID }));
   };
 
   return (
@@ -63,7 +67,7 @@ export const Header = () => {
 
         {isLoggedIn && (
           <div className="header__profile">
-            <div onClick={() => {}} className="header__profile info">
+            <div onClick={handleProfileClick} className="header__profile info">
               <IconButton>
                 <Avatar>{getAcronym("")}</Avatar>
               </IconButton>

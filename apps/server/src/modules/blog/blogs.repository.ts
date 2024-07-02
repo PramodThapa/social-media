@@ -5,7 +5,7 @@ import { CreateBlogDto } from '@/dto/blog/createBlog.dto';
 import { Blog } from './entity/blogs.entity';
 
 import gremlin from 'gremlin';
-import { UserBlogRelation, VertexLabel } from '@/interfaces/users/relation';
+import { UserBlogRelation, VertexLabel } from '@/interfaces/enum';
 
 const __ = gremlin.process.statics;
 const Order = gremlin.process.order;
@@ -54,5 +54,12 @@ export class BlogsRepository extends BaseRepository {
     const [blog] = await this.execute<Blog>(g.V(id));
 
     return blog;
+  }
+
+  async findBlogsByUserId(userId: string) {
+    const g = this.gremlinService.getClient();
+    const traversal = g.V(userId).outE(UserBlogRelation.POSTED).inV();
+
+    return await this.execute<Blog>(traversal);
   }
 }

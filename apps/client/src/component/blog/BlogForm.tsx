@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { TextField, Button, Grid, Typography } from "@mui/material";
 import { TextEditor } from "../text-editor/TextEditor";
+import ImageUpload from "../common/ImageUpload";
 
 export interface BlogFormValues {
   content: string;
@@ -14,19 +15,28 @@ export interface BlogFormValues {
 export interface BlogFormProps {
   handleSubmit: (value: BlogFormValues) => void;
   initialValues?: BlogFormValues;
+  handleImageUpload: (
+    image: File,
+    setFieldValue: (field: string, value: string) => void
+  ) => void;
 }
 
-const BlogForm = ({ initialValues, handleSubmit }: BlogFormProps) => {
+const BlogForm = ({
+  initialValues,
+  handleSubmit,
+  handleImageUpload,
+}: BlogFormProps) => {
   const formik = useFormik<BlogFormValues>({
     initialValues: {
       imageUrl: initialValues?.imageUrl || "",
       thumbnail: initialValues?.thumbnail || "",
       content: initialValues?.content || "",
-      description: initialValues?.content || "",
+      description: initialValues?.description || "",
     },
     validationSchema: Yup.object({
-      thumbnail: Yup.string().required("Thumbnail is required"),
       content: Yup.string().required("Content is required"),
+      thumbnail: Yup.string().required("Title is required"),
+      description: Yup.string().required("Description is required"),
     }),
     onSubmit: handleSubmit,
   });
@@ -49,12 +59,21 @@ const BlogForm = ({ initialValues, handleSubmit }: BlogFormProps) => {
             {initialValues ? "Update Blog" : "Create Blog"}
           </Typography>
         </Grid>
+
+        <Grid item xs={12}>
+          <ImageUpload
+            onImageUpload={(image) =>
+              handleImageUpload(image, formik.setFieldValue)
+            }
+          />
+        </Grid>
+
         <Grid item xs={12}>
           <TextField
             fullWidth
             id="thumbnail"
             name="thumbnail"
-            label="Thumbnail*"
+            label="Title*"
             value={formik.values.thumbnail}
             onChange={formik.handleChange}
             error={formik.touched.thumbnail && Boolean(formik.errors.thumbnail)}

@@ -12,6 +12,18 @@ const CreateBlog = () => {
   const { mutateAsync: createBlog } = useCreateBlog();
   const { user } = useIsLoggedIn();
 
+  const handleImageUpload = async (
+    image: File,
+    setFieldValue: (field: string, value: string) => void
+  ) => {
+    const formData = new FormData();
+    formData.append("file", image);
+    const fileResponse = await handleFileUpload(formData);
+
+    console.log(fileResponse.fileUrl);
+    setFieldValue("imageUrl", fileResponse.fileUrl);
+  };
+
   const handleCreateBlog = async (values: BlogFormValues) => {
     const { content, imageUrl, thumbnail, description } = values;
     const contentBlob = new Blob([content], { type: "text/html" });
@@ -40,7 +52,10 @@ const CreateBlog = () => {
   };
   return (
     <Box marginTop={3}>
-      <BlogForm handleSubmit={handleCreateBlog} />
+      <BlogForm
+        handleSubmit={handleCreateBlog}
+        handleImageUpload={handleImageUpload}
+      />
     </Box>
   );
 };

@@ -28,6 +28,8 @@ export const TextEditor = ({ editorValue, handleChange }: TextEditorProps) => {
         plugins: plugins,
         toolbar: toolbars,
         placeholder: "Write you thoughts here..",
+        file_picker_types: "image",
+        file_picker_callback: () => {},
       }}
     />
   );

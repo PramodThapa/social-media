@@ -4,6 +4,7 @@ export const REFRESH_TOKEN = "REFRESH_TOKEN";
 export const QUERY_KEY = {
   USER: "user",
   BLOGS: "blogs",
+  FRIENDS: "friends",
 };
 
 export const FORM_VALIDATION_MESSAGE = {
@@ -36,10 +37,15 @@ export const BLOG = {
 export const FRIENDS = {
   FRIEND_NAV: "Friends",
   FRIENDS_TAB: [
-    { label: "All", index: 1 },
+    { label: "All", index: 0 },
     { label: "Pending", index: 2 },
     { label: "Follower", index: 3 },
     { label: "Requested", index: 4 },
     { label: "Followings", index: 5 },
+    { label: "Suggestions", index: 6 },
   ],
+};
+
+export const ACTION = {
+  EDIT: "Edit",
 };
